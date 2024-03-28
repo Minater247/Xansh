@@ -121,6 +121,18 @@ int chdir(const char *path) {
     return ret;
 }
 
+int getdents64(int fd, void *dirp, int count) {
+    int ret;
+    asm volatile (
+        "mov $217, %%rax;"
+        "syscall;"
+        : "=a" (ret)
+        : "D" (fd), "S" (dirp), "d" (count)
+        : "rcx", "r11", "memory"
+    );
+    return ret;
+}
+
 char *path_concat(char* absolute, const char* relative) {
     if (relative[0] == '/') {
         strcpy(absolute, relative);

@@ -2,6 +2,7 @@
 #define _STDIO_H
 
 #include <stddef.h>
+#include <sys/types.h>
 
 #define PATH_MAX 4096
 #define NAME_MAX 255
@@ -27,14 +28,23 @@
 #define O_DIRECTORY 0x100000
 #define O_SYMLINK 0x200000
 
+struct dirent64
+{
+    ino_t d_ino;
+    off_t d_off;
+    unsigned short d_reclen;
+    char d_name[];
+};
+
 int open(const char *filename, int flags);
 int close(int fd);
 int read(int fd, void *buf, size_t count);
 int write(int fd, const void *buf, size_t count);
 int exit(int status);
 int read(int fd, void *buf, size_t count);
-char *path_concat(char* absolute, const char* relative);
+char *path_concat(char *absolute, const char *relative);
 char *path_normalize(char *path);
 int chdir(const char *path);
+int getdents64(int fd, void *dirp, int count);
 
 #endif
