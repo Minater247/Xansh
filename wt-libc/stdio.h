@@ -46,5 +46,6 @@ char *path_concat(char *absolute, const char *relative);
 char *path_normalize(char *path);
 int chdir(const char *path);
 int getdents64(int fd, void *dirp, int count);
+int getcwd(char *buf, size_t size);
 
 #endif

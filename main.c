@@ -65,10 +65,15 @@ char *get_nth_arg(char *string, char *buffer, int n)
 {
     int i = 0;
     int arg_num = 0;
+    bool in_quotes = false;
     while (arg_num < n)
     {
-        while (string[i] != ' ' && string[i] != '\0')
+        while ((string[i] != ' ' || in_quotes) && string[i] != '\0')
         {
+            if (string[i] == '\"' && (i == 0 || string[i-1] != '\\'))
+            {
+                in_quotes = !in_quotes;
+            }
             i++;
         }
         if (string[i] == '\0')
@@ -83,11 +88,18 @@ char *get_nth_arg(char *string, char *buffer, int n)
         arg_num++;
     }
     int j = 0;
-    while (string[i] != ' ' && string[i] != '\0')
+    while ((string[i] != ' ' || in_quotes) && string[i] != '\0')
     {
-        buffer[j] = string[i];
+        if (string[i] == '\"' && (i == 0 || string[i-1] != '\\'))
+        {
+            in_quotes = !in_quotes;
+        }
+        else
+        {
+            buffer[j] = string[i];
+            j++;
+        }
         i++;
-        j++;
     }
     buffer[j] = '\0';
     return buffer;
@@ -144,6 +156,26 @@ int main()
         strcat(pre, pwd);
         strcat(pre, "# ");
         read_string(pre, keyboard_fd, fd, buffer);
+
+        // Ensure there is an even number of unescaped quotes
+        int num_quotes = 0;
+        for (size_t i = 0; i < strlen(buffer); i++)
+        {
+            if (buffer[i] == '"')
+            {
+                num_quotes++;
+            }
+            if (buffer[i] == '\\' && buffer[i + 1] == '"')
+            {
+                num_quotes--;
+                i++;
+            }
+        }
+        if (num_quotes % 2 != 0)
+        {
+            write(fd, "Unmatched quotes\n", 17);
+            continue;
+        }
 
         // Check the command
         char command[MAX_LENGTH];
@@ -222,24 +254,23 @@ int main()
         else if (strcmp(command, "cd") == 0)
         {
             // only takes 1 argument
-            strcpy(old_pwd, pwd);
             get_nth_arg(buffer, command, 1);
-            path_normalize(path_concat(pwd, command));
-            if (!isDir(pwd))
+            path_normalize(command);
+            if (!isDir(command))
             {
-                strcpy(pwd, old_pwd);
                 write(fd, "Directory not found\n", 20);
                 continue;
             }
-            if (chdir(pwd) < 0)
+            if (chdir(command) < 0)
             {
-                strcpy(pwd, old_pwd);
                 write(fd, "Failed to change directory\n", 27);
             }
+            getcwd(pwd, PATH_MAX);
         }
         else if (strcmp(command, "ls") == 0)
         {
             int i = 1;
+            int num_args = get_num_args(buffer);
             while (1)
             {
                 get_nth_arg(buffer, command, i);
@@ -254,7 +285,7 @@ int main()
                 }
                 else
                 {
-                    if (get_num_args(buffer) > 1)
+                    if (num_args > 2)
                     {
                         write(fd, command, strlen(command));
                         write(fd, ":\n", 2);
@@ -281,6 +312,9 @@ int main()
                                 break;
                             }
                             d = (struct dirent64 *)(buf + bpos);
+                            if (num_args > 2) {
+                                write(fd, "\t", 1);
+                            }
                             write(fd, d->d_name, strlen(d->d_name));
                             write(fd, "\n", 1);
                             bpos += d->d_reclen;
@@ -293,7 +327,7 @@ int main()
             }
 
             // if there were no arguments, list the current directory
-            if (get_num_args(buffer) == 1)
+            if (num_args == 1)
             {
                 int dir_fd = open(pwd, 0);
                 if (dir_fd < 0)
@@ -302,9 +336,6 @@ int main()
                 }
                 else
                 {
-                    write(fd, pwd, strlen(pwd));
-                    write(fd, ":\n", 2);
-
                     char buf[1024];
                     int nread;
                     struct dirent64 *d;

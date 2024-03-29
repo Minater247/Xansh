@@ -133,27 +133,31 @@ int getdents64(int fd, void *dirp, int count) {
     return ret;
 }
 
+int getcwd(char *buf, size_t size) {
+    int ret;
+    asm volatile (
+        "mov $79, %%rax;"
+        "syscall;"
+        : "=a" (ret)
+        : "D" (buf), "S" (size)
+        : "rcx", "r11", "memory"
+    );
+    return ret;
+}
+
 char *path_concat(char* absolute, const char* relative) {
     if (relative[0] == '/') {
         strcpy(absolute, relative);
         return absolute;
     }
 
-    char* token = strtok((char *)relative, "/");
-    while (token != NULL) {
-        if (strcmp(token, "..") == 0) {
-            // Find the last '/' in the absolute path and terminate the string there
-            char* last_slash = strrchr(absolute, '/');
-            if (last_slash != NULL) {
-                *last_slash = '\0';
-            }
-        } else if (strcmp(token, ".") != 0) {
-            // Append '/' and the token to the absolute path
-            strcat(absolute, "/");
-            strcat(absolute, token);
-        }
-        token = strtok(NULL, "/");
+    int len = strlen(absolute);
+    if (absolute[len - 1] != '/') {
+        absolute[len] = '/';
+        len++;
     }
+
+    strcpy(absolute + len, relative);
 
     return absolute;
 }
