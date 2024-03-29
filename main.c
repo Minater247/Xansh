@@ -151,10 +151,9 @@ int main()
     char buffer[MAX_LENGTH];
     while (1)
     {
-        // write(fd, "[root@xanaduOS]# ", 17);
-        strcpy(pre, "[root@xanaduOS] ");
+        strcpy(pre, "\033[0m[\033[38;5;160mroot\033[0m@\033[38;5;27mxanaduOS\033[0m] \033[38;5;41m");
         strcat(pre, pwd);
-        strcat(pre, "# ");
+        strcat(pre, "\033[0m# ");
         read_string(pre, keyboard_fd, fd, buffer);
 
         // Ensure there is an even number of unescaped quotes
