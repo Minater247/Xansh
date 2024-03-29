@@ -145,6 +145,42 @@ int getcwd(char *buf, size_t size) {
     return ret;
 }
 
+int fork() {
+    int ret;
+    asm volatile (
+        "mov $57, %%rax;"
+        "syscall;"
+        : "=a" (ret)
+        :
+        : "rcx", "r11", "memory"
+    );
+    return ret;
+}
+
+int execv(const char *path, char *const argv[]) {
+    int ret;
+    asm volatile (
+        "mov $59, %%rax;"
+        "syscall;"
+        : "=a" (ret)
+        : "D" (path), "S" (argv)
+        : "rcx", "r11", "memory"
+    );
+    return ret;
+}
+
+int waitpid(int pid, int *status, int options) {
+    int ret;
+    asm volatile (
+        "mov $61, %%rax;"
+        "syscall;"
+        : "=a" (ret)
+        : "D" (pid), "S" (status), "d" (options)
+        : "rcx", "r11", "memory"
+    );
+    return ret;
+}
+
 char *path_concat(char* absolute, const char* relative) {
     if (relative[0] == '/') {
         strcpy(absolute, relative);

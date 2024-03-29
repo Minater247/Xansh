@@ -270,6 +270,11 @@ int main()
         {
             int i = 1;
             int num_args = get_num_args(buffer);
+            char buf[1024];
+            int nread;
+            struct dirent64 *d;
+            int bpos;
+            char dir_path[PATH_MAX];
             while (1)
             {
                 get_nth_arg(buffer, command, i);
@@ -289,10 +294,6 @@ int main()
                         write(fd, command, strlen(command));
                         write(fd, ":\n", 2);
                     }
-                    char buf[1024];
-                    int nread;
-                    struct dirent64 *d;
-                    int bpos;
 
                     for (;;)
                     {
@@ -314,6 +315,18 @@ int main()
                             if (num_args > 2) {
                                 write(fd, "\t", 1);
                             }
+
+                            // convert to absolute and check if it's a directory
+                            strcpy(dir_path, command);
+                            strcat(dir_path, "/");
+                            strcat(dir_path, d->d_name);
+                            if (isDir(dir_path))
+                            {
+                                write(fd, "\033[38;5;27m", 10);
+                            } else {
+                                write(fd, "\033[0m", 4);
+                            }
+
                             write(fd, d->d_name, strlen(d->d_name));
                             write(fd, "\n", 1);
                             bpos += d->d_reclen;
@@ -335,10 +348,6 @@ int main()
                 }
                 else
                 {
-                    char buf[1024];
-                    int nread;
-                    struct dirent64 *d;
-                    int bpos;
 
                     for (;;)
                     {
@@ -352,6 +361,18 @@ int main()
                         for (bpos = 0; bpos < nread;)
                         {
                             d = (struct dirent64 *)(buf + bpos);
+
+                            // convert to absolute and check if it's a directory
+                            strcpy(dir_path, pwd);
+                            strcat(dir_path, "/");
+                            strcat(dir_path, d->d_name);
+                            if (isDir(dir_path))
+                            {
+                                write(fd, "\033[38;5;27m", 10);
+                            } else {
+                                write(fd, "\033[0m", 4);
+                            }
+
                             write(fd, d->d_name, strlen(d->d_name));
                             write(fd, "\n", 1);
                             bpos += d->d_reclen;
@@ -368,6 +389,33 @@ int main()
         }
         else if (strcmp(command, "clear") == 0) {
             write(fd, "\033[2J\033[1;1H", 10);
+        }
+        else if(command[0] == '.' || command[0] == '/') {
+            char *args[get_num_args(buffer) + 1];
+            int i = 0;
+            while (1)
+            {
+                get_nth_arg(buffer, command, i);
+                if (strlen(command) == 0)
+                {
+                    break;
+                }
+                args[i] = command;
+                i++;
+            }
+            args[i] = NULL;
+            int pid = fork();
+            if (pid == 0)
+            {
+                execv(args[0], args);
+                write(fd, "Command not found\n", 18);
+                exit(1);
+            }
+            else
+            {
+                int status;
+                waitpid(pid, &status, 0);
+            }
         }
         else
         {

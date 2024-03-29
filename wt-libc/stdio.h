@@ -47,5 +47,8 @@ char *path_normalize(char *path);
 int chdir(const char *path);
 int getdents64(int fd, void *dirp, int count);
 int getcwd(char *buf, size_t size);
+int fork();
+int execv(const char *path, char *const argv[]);
+int waitpid(int pid, int *status, int options);
 
 #endif
