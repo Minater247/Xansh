@@ -157,13 +157,13 @@ int fork() {
     return ret;
 }
 
-int execv(const char *path, char *const argv[]) {
+int execv(const char *path, char *const argv[], char *const envp[]) {
     int ret;
     asm volatile (
         "mov $59, %%rax;"
         "syscall;"
         : "=a" (ret)
-        : "D" (path), "S" (argv)
+        : "D" (path), "S" (argv), "d" (envp)
         : "rcx", "r11", "memory"
     );
     return ret;

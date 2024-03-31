@@ -48,7 +48,7 @@ int chdir(const char *path);
 int getdents64(int fd, void *dirp, int count);
 int getcwd(char *buf, size_t size);
 int fork();
-int execv(const char *path, char *const argv[]);
+int execv(const char *path, char *const argv[], char *const envp[]);
 int waitpid(int pid, int *status, int options);
 
 #endif

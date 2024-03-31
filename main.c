@@ -11,6 +11,8 @@ char pwd[PATH_MAX] = "/";
 char pre[PATH_MAX + 64];
 char old_pwd[PATH_MAX];
 
+uint64_t zero = 0;
+
 /**
  * Read a string with a given prompt, writing progress to the console
  *
@@ -130,6 +132,17 @@ int get_num_args(char *string)
 bool isDir(char *path)
 {
     int fd = open(path, O_DIRECTORY);
+    if (fd < 0)
+    {
+        return false;
+    }
+    close(fd);
+    return true;
+}
+
+bool fileExists(char *path)
+{
+    int fd = open(path, 0);
     if (fd < 0)
     {
         return false;
@@ -391,34 +404,28 @@ int main()
             write(fd, "\033[2J\033[1;1H", 10);
         }
         else if(command[0] == '.' || command[0] == '/') {
-            char *args[get_num_args(buffer) + 1];
-            int i = 0;
-
             // Make sure the file exists
-            int exec_fd = open(command, 0);
-            if (exec_fd < 0)
+            if (!fileExists(command))
             {
                 write(fd, "File not found\n", 15);
                 continue;
             }
-            close(exec_fd);
 
-            while (1)
+            if (isDir(command))
             {
-                get_nth_arg(buffer, command, i);
-                if (strlen(command) == 0)
-                {
-                    break;
-                }
-                args[i] = command;
-                i++;
+                write(fd, "Cannot execute a directory\n", 27);
+                continue;
             }
-            args[i] = NULL;
+
+            // TODO: Implement arguments
+            char path_command[PATH_MAX];
+            strcpy(path_command, command);
+
             int pid = fork();
             if (pid == 0)
             {
                 write(fd, "Executing command\n", 18);
-                execv(args[0], args);
+                execv((const char *)&path_command, (char *const *)&zero, (char *const *)&zero);
                 write(fd, "Command not found\n", 18);
                 exit(1);
             }
