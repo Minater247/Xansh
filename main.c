@@ -393,6 +393,16 @@ int main()
         else if(command[0] == '.' || command[0] == '/') {
             char *args[get_num_args(buffer) + 1];
             int i = 0;
+
+            // Make sure the file exists
+            int exec_fd = open(command, 0);
+            if (exec_fd < 0)
+            {
+                write(fd, "File not found\n", 15);
+                continue;
+            }
+            close(exec_fd);
+
             while (1)
             {
                 get_nth_arg(buffer, command, i);
@@ -407,6 +417,7 @@ int main()
             int pid = fork();
             if (pid == 0)
             {
+                write(fd, "Executing command\n", 18);
                 execv(args[0], args);
                 write(fd, "Command not found\n", 18);
                 exit(1);
@@ -414,6 +425,9 @@ int main()
             else
             {
                 int status;
+                write(fd, "Waiting for child process to finish\n", 36);
+
+                while (1);
                 waitpid(pid, &status, 0);
             }
         }
