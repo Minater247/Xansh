@@ -433,9 +433,12 @@ int main()
             {
                 int status;
                 write(fd, "Waiting for child process to finish\n", 36);
-
-                while (1);
-                waitpid(pid, &status, 0);
+                int val = waitpid(pid, &status, 0);
+                if (val < 0) {
+                    write(fd, "Error waiting for child process\n", 32);
+                } else {
+                    write(fd, "Child process finished\n", 23);
+                }
             }
         }
         else
