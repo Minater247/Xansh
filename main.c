@@ -424,7 +424,6 @@ int main()
             int pid = fork();
             if (pid == 0)
             {
-                write(fd, "Executing command\n", 18);
                 execv((const char *)&path_command, (char *const *)&zero, (char *const *)&zero);
                 write(fd, "Command not found\n", 18);
                 exit(1);
@@ -432,12 +431,9 @@ int main()
             else
             {
                 int status;
-                write(fd, "Waiting for child process to finish\n", 36);
                 int val = waitpid(pid, &status, 0);
                 if (val < 0) {
                     write(fd, "Error waiting for child process\n", 32);
-                } else {
-                    write(fd, "Child process finished\n", 23);
                 }
             }
         }
