@@ -196,6 +196,7 @@ int main()
         {
             // get the argument
             get_nth_arg(buffer, command, 1);
+            write(fd, "Goodbye!\n", 9);
             if (strlen(command) > 0)
             {
                 exit(atoi(command));
@@ -417,7 +418,6 @@ int main()
                 continue;
             }
 
-            // TODO: Implement arguments
             char path_command[PATH_MAX];
             strcpy(path_command, command);
 
