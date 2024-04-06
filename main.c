@@ -431,7 +431,7 @@ int main()
             else
             {
                 int status;
-                int val = waitpid(pid, &status, 0);
+                int val = wait4(pid, &status, 0, NULL);
                 if (val < 0) {
                     write(fd, "Error waiting for child process\n", 32);
                 }

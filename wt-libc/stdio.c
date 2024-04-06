@@ -169,13 +169,13 @@ int execv(const char *path, char *const argv[], char *const envp[]) {
     return ret;
 }
 
-int waitpid(int pid, int *status, int options) {
+int wait4(int pid, int *status, int options, void *rusage) {
     int ret;
     asm volatile (
         "mov $61, %%rax;"
         "syscall;"
         : "=a" (ret)
-        : "D" (pid), "S" (status), "d" (options)
+        : "D" (pid), "S" (status), "d" (options), "r" (rusage)
         : "rcx", "r11", "memory"
     );
     return ret;
