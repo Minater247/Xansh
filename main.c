@@ -159,6 +159,8 @@ int main()
     // Simple MOTD
     write(fd, "Welcome to the simple XanaduOS shell - Xansh!\n", 46);
     write(fd, "Type 'exit' to exit the shell.\n", 31);
+    
+    getcwd(pwd, PATH_MAX);
 
     // read a string and write it until "exit" is entered
     char buffer[MAX_LENGTH];
