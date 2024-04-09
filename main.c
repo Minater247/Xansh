@@ -1,9 +1,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "wt-libc/stdio.h"
-#include "wt-libc/string.h"
-#include "wt-libc/sys/types.h"
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 
 #define MAX_LENGTH 256
 
